@@ -51,7 +51,8 @@ not claim universal immunity to misleading evidence.
 
 1. **Offline prototype (implemented):** bounded input, conservative rules, optional resident MLX,
    CLI/API, authored next checks, synthetic regressions, raw response and error reporting.
-2. **Dataset development:** version and review a small domain corpus with incident-family IDs,
+2. **Dataset development (workflow implemented; human review pending):** version and review a small
+   domain corpus with incident-family IDs,
    source/provenance and redaction notes, explicit labels and evidence completeness. Expand contrast
    cases and adjudicate ambiguity; freeze grouped train/calibration/test manifests. Keep these 22
    regression fixtures outside the fresh test set.

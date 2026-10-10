@@ -6,21 +6,21 @@ uses PyTorch training; generic `mlx-lm` LoRA tooling is not assumed compatible.
 
 ## Next concrete step
 
-Author and independently review a first **25 incident families**, targeting five per answer category.
-Use authorized, redacted real incident evidence where available; mark synthetic records honestly.
+The [dataset workflow](dataset-workflow.md) and 25 synthetic draft families are now implemented.
+Review the [supplied packet](../datasets/v0.1/review-packet.md), record explicit approvals/corrections,
+then freeze dataset v0.1 using the CLI. Every shipped record is initially pending; no human review
+or frozen release was fabricated. This milestone targets five families per answer category.
+For a later corpus, use authorized, redacted real incident evidence where available and mark synthetic
+records honestly; this pilot's source format accepts synthetic records only.
 Include missing-manifest versus access-denied contrasts, network versus TLS-trust failures, rate
 limits despite successful authentication, explicit other causes, and unresolved multi-cause cases.
 Record disagreements and adjudicate the correct diagnostic category before freezing dataset v0.1.
 Do not turn the model's predictions into labels. These 22 regression cases remain smoke tests.
 
-Each versioned source record should contain:
-
-- `schema_version`, `dataset_version`, stable `example_id`, `incident_family_id`, provenance,
-  `synthetic`, source/redaction notes, reviewer IDs, and review/adjudication status.
-- `state`: validated incident evidence prepared by the application's evidence-only serializer.
-- `questions`: the fixed typed `cause` question with all five criteria and recorded option order.
-- `correct_answers`: the adjudicated cause, separate from state, plus reference rationale,
-  evidence status and any limitations outside the state.
+Versioned source records contain IDs, provenance, synthetic status, bounded state, proposed label,
+rationale, evidence status, and a reference to the dataset-level typed question snapshot. Reviewer
+identity, adjudicated final label, rationale, and status come from the separate append-only review log.
+Frozen records contain the source plus its current approval; labels never enter state.
 
 Freeze the question schema/version together with the dataset. Reject examples with labels/rationales
 embedded accidentally in state. A future export adapter maps reviewed answers to the pinned upstream
@@ -33,8 +33,8 @@ reviewed source format or grouped split policy.
 
 Assign entire incident families to one split. Group paraphrases, repeated messages, tag substitutions,
 shared incident timelines, and derived variants together; exact deduplication alone is insufficient.
-Create versioned split manifests before tokenization. A proposed starting allocation is 60% training,
-20% calibration, 20% test by family, balanced as possible by cause. Twenty-five families are a pilot
+Create versioned split manifests before tokenization. The pilot implements 60% training,
+20% calibration, 20% test by family: three/one/one families per final cause. Twenty-five families are a pilot
 corpus, not an adequate basis for broad accuracy claims; expand after reviewing class coverage.
 Reserve additional newly authored, unseen test families beyond both the training pilot and these
 regression fixtures. Do not use test errors to tune the same model and keep calling that set unseen.

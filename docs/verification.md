@@ -62,5 +62,32 @@ real HTTP checks pass. This is not a failed check. No required phase-one check i
 fine-tuned comparisons/calibration, conversion parity, independent test accuracy, and cluster
 integration are future work and were not executed.
 
-Next step: review 25 new incident families with provenance, redaction and adjudicated labels, then
-freeze a versioned grouped dataset/split manifest as described in [the dataset plan](dataset-training.md).
+The original next step was a reviewed dataset workflow; its implementation is recorded below.
+
+## Dataset workflow milestone — 10 October 2026
+
+Implemented `dataset validate`, `review-packet`, `review`, and `freeze`, plus verified frozen-dataset
+evaluation with an explicit split. The shipped corpus contains 25 new individually authored synthetic
+families, five proposed cases per category, all pending human review. No provider was used to author
+or approve these records. No review log or frozen release was fabricated for the shipped corpus.
+
+Executed checks:
+
+- **106 pytest tests passed**: the original 55 plus 51 dataset cases, including invalid JSON/metadata,
+  evidence bounds, duplicates, explicit correction/rejection history, stale approvals, question/order
+  changes, concurrent log appends, grouped variants, deterministic 15/5/5 family splits, read-only
+  releases, tamper detection, evaluation label isolation, and report provenance.
+- Executed `uv sync --locked` to test the portable profile with **MLX and Laya-MLX absent**;
+  the complete suite and dataset validation passed. Native inference remains available through the
+  documented `--extra laya` profile; no weights were fetched or models run in this milestone.
+- CLI validation reported 25 pending, zero approved/rejected/stale, balanced proposed categories,
+  and `release_ready: false`. Regenerated the self-contained Markdown packet from the source.
+- Existing CLI fixture evaluation still completed with 22 valid rules predictions and 22 reference
+  matches; the smoke report is separate from the earlier saved measurements.
+- Ruff lint/format, lockfile validation, and whitespace checks passed. The existing Starlette
+  TestClient deprecation notice persists; no test failed.
+
+Test-only decisions and frozen releases exist only in temporary test directories. There is no new
+dataset accuracy claim. Freezing/evaluating the delivered corpus awaits your actual reviews by design.
+Start with [the review packet](../datasets/v0.1/review-packet.md) and
+[the workflow guide](dataset-workflow.md). Training and cluster integration remain deferred.

@@ -125,6 +125,41 @@ Actual first-run results and full responses: [verification record](docs/verifica
 [rules report](docs/evaluation/rules.md), [real Laya report](docs/evaluation/laya.md).
 No simulated test outputs are included in those measurement reports.
 
+## Reviewed dataset workflow
+
+A separate [draft corpus and review packet](datasets/v0.1/review-packet.md) contains **25 new
+synthetic incident families**, five proposed cases per category. All start pending your review;
+they are separate from the 22 regression fixtures. No provider was used to propose or approve labels.
+
+```sh
+uv run --locked k8s-triage dataset validate
+uv run --locked k8s-triage dataset review-packet --output datasets/v0.1/review-packet.md
+
+# Only after reviewing this case; supply your identity and actual review rationale.
+uv run --locked k8s-triage dataset review \
+  --example-id v01-removed-catalog-tag --decision approved --label image_reference \
+  --reviewer "YOUR_NAME" --note "YOUR_REVIEW_RATIONALE"
+
+# After every record has a current approval and final class coverage remains balanced:
+uv run --locked k8s-triage dataset freeze --output datasets/releases/v0.1
+uv run --locked k8s-triage evaluate --provider rules \
+  --dataset datasets/releases/v0.1 --split test \
+  --report reports/dataset-rules.md --json-report reports/dataset-rules.json
+```
+
+Review corrections use the same `approved` action with your explicit corrected `--label` and note.
+Rejection uses `--decision rejected` without a label. Decisions append to `datasets/v0.1/reviews.jsonl`;
+changes to evidence, draft metadata/rationale, or the typed question invalidate previous approval.
+Validation accepts pending drafts, reports review status, and lists release blockers. Freeze refuses
+pending/rejected/stale decisions, inconsistent family labels, unbalanced classes, and existing outputs.
+It assigns **15/5/5 families** to train/calibration/test, keeping variants together, and creates
+read-only artifacts with content hashes. Dataset evaluation verifies the release before prediction
+and reports dataset/split/question hashes. `--dataset` and `--fixtures` are mutually exclusive;
+`--split` is required only for dataset evaluation.
+
+These commands are offline and require no MLX. Append-only reviews use POSIX locking on Mac/Linux.
+See the [complete review workflow](docs/dataset-workflow.md) for formats, limits, and review semantics.
+
 ## Scope and next phases
 
 No cluster access, kubeconfig reads, Kubernetes credentials, command execution, generated remediation,

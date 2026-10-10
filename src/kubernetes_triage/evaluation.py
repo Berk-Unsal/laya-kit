@@ -106,11 +106,19 @@ def json_block(value) -> str:
 
 
 def markdown_report(report: dict) -> str:
+    corpus_note = (
+        "Human-reviewed synthetic dataset split; not a production accuracy estimate or "
+        "a sufficient training dataset. All predictions require human review."
+        if "dataset" in report
+        else "Manually authored synthetic regression fixtures; not a production accuracy estimate "
+        "or a sufficient training dataset. All predictions require human review."
+    )
     lines = [
-        "# Kubernetes image-pull fixture evaluation",
+        "# Kubernetes image-pull dataset evaluation"
+        if "dataset" in report
+        else "# Kubernetes image-pull fixture evaluation",
         "",
-        "Manually authored synthetic regression fixtures; not a production accuracy estimate "
-        "or a sufficient training dataset. All predictions require human review.",
+        corpus_note,
         "",
         "Latency covers rules classification or Laya evidence preparation plus synchronized predict, "
         "excluding output validation, checkpoint loading, and lock wait. First-load time is recorded "
@@ -135,6 +143,11 @@ def markdown_report(report: dict) -> str:
                     "correct": case.get("correct"),
                     "fixture": case["fixture"],
                     "error": case["error"],
+                    **(
+                        {"dataset_record": case["dataset_record"]}
+                        if "dataset_record" in case
+                        else {}
+                    ),
                 }
             ),
             "",

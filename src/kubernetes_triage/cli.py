@@ -7,6 +7,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from .dataset import SPLITS, load_release
+from .dataset_cli import add_dataset_commands, run_dataset_command
 from .evaluation import evaluate, write_reports
 from .inference import DEFAULT_MODEL, DEFAULT_REVISION, ProviderError
 from .schemas import Incident
@@ -51,23 +53,40 @@ def main(argv=None) -> int:
                 "--input", required=True, help="Incident JSON path, or - for stdin"
             )
         if name == "evaluate":
-            command.add_argument("--fixtures", default="fixtures/image_pull.synthetic.json")
+            inputs = command.add_mutually_exclusive_group()
+            inputs.add_argument("--fixtures")
+            inputs.add_argument("--dataset", type=Path, help="Verified frozen release directory")
+            command.add_argument("--split", choices=SPLITS)
             command.add_argument("--report", required=True, type=Path)
             command.add_argument("--json-report", type=Path)
         if name == "serve":
             command.add_argument("--host", default="127.0.0.1")
             command.add_argument("--port", default=8000, type=int)
+    add_dataset_commands(commands)
     args = parser.parse_args(argv)
-    service = TriageService(
-        allow_download=args.allow_download, model=args.model, revision=args.revision
-    )
     try:
+        if args.command == "dataset":
+            return run_dataset_command(args)
+        service = TriageService(
+            allow_download=args.allow_download, model=args.model, revision=args.revision
+        )
         if args.command == "predict":
             incident = Incident.model_validate(read_json(args.input, 64_000))
             print(service.predict(incident, args.provider).model_dump_json(indent=2))
             return 0
         if args.command == "evaluate":
-            records = read_json(args.fixtures, 2_000_000)
+            release = None
+            if args.dataset:
+                if args.split is None:
+                    raise ValueError("Dataset evaluation requires an explicit --split")
+                release = load_release(args.dataset)
+                records = release.evaluation_records(args.split)
+            else:
+                if args.split is not None:
+                    raise ValueError("--split is only supported with --dataset")
+                records = read_json(
+                    args.fixtures or "fixtures/image_pull.synthetic.json", 2_000_000
+                )
             if not isinstance(records, list) or not 1 <= len(records) <= 1000:
                 raise ValueError("Fixtures must be a JSON list containing 1 to 1000 records")
             report = evaluate(
@@ -76,6 +95,11 @@ def main(argv=None) -> int:
                 provider=args.provider,
                 model=service.rules.model if args.provider == "rules" else args.model,
             )
+            if release:
+                report["dataset"] = release.report_provenance(args.split)
+                reviewed = {r.draft.example_id: r for r in release.records}
+                for case in report["cases"]:
+                    case["dataset_record"] = reviewed[case["id"]].model_dump(mode="json")
             write_reports(report, args.report, args.json_report)
             print(json.dumps(report["summary"], indent=2))
             return 2 if report["summary"]["errors"] or report["summary"]["unevaluated"] else 0
