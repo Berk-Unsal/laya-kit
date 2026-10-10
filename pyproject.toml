@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kubernetes-incident-triage"
+version = "0.1.0"
+description = "Offline image-pull incident diagnosis with mandatory human review"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "pydantic>=2.10,<3",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+laya = ["laya-mlx==0.4.0; sys_platform == 'darwin' and platform_machine == 'arm64'"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "httpx>=0.28,<1", "ruff>=0.12,<1"]
+
+[project.scripts]
+k8s-triage = "kubernetes_triage.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kubernetes_triage"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

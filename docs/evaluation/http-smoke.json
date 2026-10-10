@@ -1,0 +1,134 @@
+{
+  "health_before": {
+    "status": "ok",
+    "version": "0.1.0",
+    "review_required": true,
+    "laya_loaded": false,
+    "model": "aac6fef/laya-mlx",
+    "model_revision": "20aed815fc6acde75733882e7ec0e3f28aeb9717",
+    "downloads_allowed": false
+  },
+  "rules": {
+    "provider": "rules",
+    "execution_kind": "deterministic",
+    "model": "image-pull-rules-v1",
+    "model_revision": null,
+    "runtime_version": "0.1.0",
+    "dtype": null,
+    "selected_cause": "image_reference",
+    "probabilities": null,
+    "ranked_options": null,
+    "evidence_assessment": {
+      "status": "specific_signal",
+      "matched_causes": [
+        "image_reference"
+      ]
+    },
+    "recommended_check": {
+      "id": "verify_image_manifest",
+      "title": "Verify the image reference and manifest",
+      "description": "Compare the exact registry, repository, tag or digest with the publisher's catalog and supported platforms. Check whether that manifest exists."
+    },
+    "inference_ms": 0.031167000997811556,
+    "model_load_ms": 0.0,
+    "review_status": "required",
+    "review_reason": "Human review is required; model probabilities do not verify correctness.",
+    "explanation_kind": "authored_template",
+    "explanation": "Selected category: Invalid image reference, absent image/tag, or missing manifest. Explicit category signals were detected by the evidence rules. This template is not model reasoning.",
+    "usage": null,
+    "raw_response": null
+  },
+  "laya": {
+    "provider": "laya",
+    "execution_kind": "native_mlx",
+    "model": "aac6fef/laya-mlx",
+    "model_revision": "20aed815fc6acde75733882e7ec0e3f28aeb9717",
+    "runtime_version": "0.4.0",
+    "dtype": "float16",
+    "selected_cause": "other_or_insufficient_evidence",
+    "probabilities": {
+      "image_reference": 0.2493,
+      "registry_auth": 0.0807,
+      "registry_connectivity": 0.086,
+      "registry_rate_limit": 0.2559,
+      "other_or_insufficient_evidence": 0.3281
+    },
+    "ranked_options": [
+      {
+        "cause": "other_or_insufficient_evidence",
+        "probability": 0.3281
+      },
+      {
+        "cause": "registry_rate_limit",
+        "probability": 0.2559
+      },
+      {
+        "cause": "image_reference",
+        "probability": 0.2493
+      },
+      {
+        "cause": "registry_connectivity",
+        "probability": 0.086
+      },
+      {
+        "cause": "registry_auth",
+        "probability": 0.0807
+      }
+    ],
+    "evidence_assessment": {
+      "status": "specific_signal",
+      "matched_causes": [
+        "image_reference"
+      ]
+    },
+    "recommended_check": {
+      "id": "review_full_pull_evidence",
+      "title": "Review the full pull failure",
+      "description": "Collect the original pull error and correlate event time, image, container and node. Inspect evidence of causes outside these four categories before deciding."
+    },
+    "inference_ms": 84.21079200343229,
+    "model_load_ms": 437.6426250091754,
+    "review_status": "required",
+    "review_reason": "Human review is required; model probabilities do not verify correctness.",
+    "explanation_kind": "authored_template",
+    "explanation": "Selected category: Another image-pull cause, conflicting signals, or insufficient evidence. Explicit category signals were detected by the evidence rules. This template is not model reasoning.",
+    "usage": {
+      "input_tokens": 205,
+      "output_tokens": 0,
+      "state_tokens": 67,
+      "state_tokens_dropped": 0,
+      "truncated": false,
+      "truncated_questions": []
+    },
+    "raw_response": {
+      "model": "laya-rl-agent",
+      "answers": {
+        "cause": {
+          "type": "choice",
+          "confidence": 0.0837,
+          "answer_confidence": 0.3281,
+          "action": {
+            "act_probability": 1.0
+          },
+          "choice": "other_or_insufficient_evidence",
+          "probabilities": {
+            "image_reference": 0.2493,
+            "registry_auth": 0.0807,
+            "registry_connectivity": 0.086,
+            "registry_rate_limit": 0.2559,
+            "other_or_insufficient_evidence": 0.3281
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 205,
+        "output_tokens": 0,
+        "state_tokens": 67,
+        "state_tokens_dropped": 0,
+        "truncated": false,
+        "truncated_questions": []
+      }
+    }
+  },
+  "invalid_request_status": 422
+}

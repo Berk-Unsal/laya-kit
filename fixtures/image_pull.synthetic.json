@@ -1,0 +1,134 @@
+[
+  {
+    "id": "manifest-unknown", "group_id": "missing-release-tag", "synthetic": true,
+    "incident": {"images": ["registry.example.test/payments:release-404"], "events": [{"reason": "Failed", "message": "Failed to pull image: manifest unknown: manifest unknown"}], "waiting": [{"reason": "ImagePullBackOff"}]},
+    "expected_cause": "image_reference",
+    "reference_rationale": "Manifest unknown explicitly identifies an absent manifest; backoff supplies no alternate cause."
+  },
+  {
+    "id": "tag-not-found", "group_id": "missing-release-tag", "synthetic": true,
+    "incident": {"images": ["registry.example.test/payments:release-404"], "waiting": [{"reason": "ErrImagePull", "message": "image tag release-404 not found in registry"}]},
+    "expected_cause": "image_reference",
+    "reference_rationale": "The named image tag is absent; credential refresh is not supported by this evidence."
+  },
+  {
+    "id": "invalid-reference", "group_id": "malformed-reference", "synthetic": true,
+    "incident": {"images": ["registry.example.test/APP:bad tag"], "waiting": [{"reason": "InvalidImageName", "message": "Failed to apply default image tag: invalid reference format"}]},
+    "expected_cause": "image_reference",
+    "reference_rationale": "The runtime explicitly rejects the reference syntax."
+  },
+  {
+    "id": "platform-manifest", "group_id": "platform-manifest", "synthetic": true,
+    "incident": {"images": ["registry.example.test/worker:1.0"], "events": [{"message": "no matching manifest for linux/arm64/v8 in the manifest list entries"}]},
+    "expected_cause": "image_reference",
+    "reference_rationale": "The platform-specific manifest is missing, even if another platform's image exists."
+  },
+  {
+    "id": "unauthorized-existing-tag", "group_id": "private-repository-access", "synthetic": true,
+    "incident": {"images": ["registry.example.test/payments:release-404"], "waiting": [{"reason": "ErrImagePull", "message": "failed to authorize: HTTP 401 Unauthorized"}]},
+    "expected_cause": "registry_auth",
+    "reference_rationale": "The same tag string as the missing-tag contrast is not evidence that it is missing; the observed response is unauthorized."
+  },
+  {
+    "id": "denied-scope", "group_id": "private-repository-access", "synthetic": true,
+    "incident": {"events": [{"reason": "Failed", "message": "denied: requested access to the resource is denied; insufficient_scope: authorization failed"}]},
+    "expected_cause": "registry_auth",
+    "reference_rationale": "Explicit denial and insufficient scope indicate registry authorization failure."
+  },
+  {
+    "id": "missing-auth", "group_id": "missing-pull-identity", "synthetic": true,
+    "incident": {"waiting": [{"reason": "ErrImagePull", "message": "Head https://registry.example.test/v2/team/app/manifests/v2: no basic auth credentials"}]},
+    "expected_cause": "registry_auth",
+    "reference_rationale": "Missing authentication credentials are explicitly reported."
+  },
+  {
+    "id": "forbidden", "group_id": "forbidden-repository", "synthetic": true,
+    "incident": {"events": [{"message": "Registry returned status code: 403 Forbidden for manifest request"}]},
+    "expected_cause": "registry_auth",
+    "reference_rationale": "A registry 403 response is an explicit access failure, not rate limiting."
+  },
+  {
+    "id": "io-timeout", "group_id": "registry-network-timeout", "synthetic": true,
+    "incident": {"events": [{"message": "Get https://registry.example.test/v2/: dial tcp 192.0.2.5:443: i/o timeout"}], "waiting": [{"reason": "ImagePullBackOff"}]},
+    "expected_cause": "registry_connectivity",
+    "reference_rationale": "A connection timeout to the registry identifies reachability failure."
+  },
+  {
+    "id": "connection-refused", "group_id": "registry-listener", "synthetic": true,
+    "incident": {"waiting": [{"reason": "ErrImagePull", "message": "dial tcp 192.0.2.9:5000: connect: connection refused"}]},
+    "expected_cause": "registry_connectivity",
+    "reference_rationale": "Explicit refusal concerns the registry connection rather than repository permissions."
+  },
+  {
+    "id": "dns-failure", "group_id": "registry-dns", "synthetic": true,
+    "incident": {"events": [{"message": "lookup registry.example.test on 192.0.2.53:53: no such host"}]},
+    "expected_cause": "registry_connectivity",
+    "reference_rationale": "The registry hostname cannot resolve."
+  },
+  {
+    "id": "deadline", "group_id": "registry-network-timeout", "synthetic": true,
+    "incident": {"events": [{"message": "Pulling image registry.example.test/app:v3 failed: context deadline exceeded"}]},
+    "expected_cause": "registry_connectivity",
+    "reference_rationale": "The pull deadline is exceeded; this baseline groups that timeout with connectivity."
+  },
+  {
+    "id": "http-429", "group_id": "registry-quota", "synthetic": true,
+    "incident": {"waiting": [{"reason": "ErrImagePull", "message": "Registry returned HTTP 429 Too Many Requests; Retry-After: 60"}]},
+    "expected_cause": "registry_rate_limit",
+    "reference_rationale": "429 and retry-after are explicit request-limit evidence."
+  },
+  {
+    "id": "pull-quota", "group_id": "registry-quota", "synthetic": true,
+    "incident": {"events": [{"message": "toomanyrequests: You have reached your pull rate limit"}]},
+    "expected_cause": "registry_rate_limit",
+    "reference_rationale": "The registry explicitly reports exhaustion of its pull quota."
+  },
+  {
+    "id": "status-429", "group_id": "proxy-request-limit", "synthetic": true,
+    "incident": {"events": [{"message": "Unexpected status code: 429 while reading registry manifest"}]},
+    "expected_cause": "registry_rate_limit",
+    "reference_rationale": "An explicit HTTP status 429 on the registry request is a rate-limit signal."
+  },
+  {
+    "id": "rate-limit-with-authenticated-identity", "group_id": "authenticated-quota", "synthetic": true,
+    "incident": {"events": [{"message": "Registry pull rate limit exceeded for authenticated service identity"}], "log_excerpts": ["Token accepted; pull quota remaining: 0"]},
+    "expected_cause": "registry_rate_limit",
+    "reference_rationale": "Authentication success does not prevent rate limiting; there is no explicit authentication failure."
+  },
+  {
+    "id": "backoff-only", "group_id": "incomplete-backoff", "synthetic": true,
+    "incident": {"images": ["registry.example.test/app:latest"], "waiting": [{"reason": "ImagePullBackOff"}]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "Backoff is a retry state and supplies no precise root-cause evidence."
+  },
+  {
+    "id": "image-name-only", "group_id": "incomplete-image", "synthetic": true,
+    "incident": {"images": ["registry.example.test/unauthorized:429"]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "An image name containing diagnostic words or a numeric tag is not an error response."
+  },
+  {
+    "id": "conflicting-manifest-and-auth", "group_id": "uncorrelated-errors", "synthetic": true,
+    "incident": {"events": [{"message": "First event: manifest unknown"}, {"message": "Second event: unauthorized: authentication required"}]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "Competing signals without container/time attribution cannot support one precise diagnosis."
+  },
+  {
+    "id": "ambiguous-docker-denial", "group_id": "ambiguous-access-message", "synthetic": true,
+    "incident": {"waiting": [{"reason": "ErrImagePull", "message": "pull access denied for team/app, repository does not exist or may require 'docker login'"}]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "The message itself offers both absence and access failure; neither should be forced as the sole cause."
+  },
+  {
+    "id": "certificate-trust", "group_id": "registry-tls-trust", "synthetic": true,
+    "incident": {"events": [{"message": "Get https://registry.example.test/v2/: x509: certificate signed by unknown authority"}]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "A certificate trust failure is a specific other cause, separate from missing evidence and from network reachability failure."
+  },
+  {
+    "id": "disk-full", "group_id": "node-storage", "synthetic": true,
+    "incident": {"waiting": [{"reason": "ErrImagePull", "message": "failed to extract layer: no space left on device"}], "log_excerpts": ["Image unpack failed on local content store"]},
+    "expected_cause": "other_or_insufficient_evidence",
+    "reference_rationale": "Local storage exhaustion is an explicit other cause, not uncertainty about an authentication error."
+  }
+]

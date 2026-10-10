@@ -1,0 +1,7 @@
+{
+  "images": ["registry.example.test/payments:release-404"],
+  "events": [
+    {"reason": "Failed", "message": "Failed to pull image: manifest unknown: manifest unknown"}
+  ],
+  "waiting": [{"reason": "ImagePullBackOff"}]
+}
